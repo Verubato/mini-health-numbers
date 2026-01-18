@@ -6,7 +6,7 @@ local config = addon.Config
 ---@type HealthTracker
 local tracker = addon.Tracker
 
-local function SetRealHealth(textString, unit)
+local function SetRealHealth(statusBar, unit)
 	local hp, max = tracker:GetHealth(unit)
 
 	if not hp or not max then
@@ -20,9 +20,38 @@ local function SetRealHealth(textString, unit)
 		return
 	end
 
-	local text = string.format("%s/%s", hp, max)
+	local displayMode = GetCVar("statusTextDisplay")
 
-	textString:SetText(text)
+	if not displayMode or not STATUS_TEXT_DISPLAY_MODE then
+		return
+	end
+
+	if displayMode == STATUS_TEXT_DISPLAY_MODE.PERCENT or displayMode == STATUS_TEXT_DISPLAY_MODE.NUMERIC then
+		-- it doesn't make much sense with percent mode and this addon
+		-- so just use real values to avoid bug reports
+		if statusBar.TextString then
+			local text = string.format("%s/%s", hp, max)
+			statusBar.TextString:SetText(text)
+			statusBar.TextString:Show()
+		end
+	elseif displayMode == STATUS_TEXT_DISPLAY_MODE.BOTH then
+		if statusBar.LeftText then
+			-- left one contains percentage
+			local percentage = math.floor((hp / max) * 100)
+			statusBar.LeftText:SetText(tostring(percentage) .. "%")
+			statusBar.LeftText:Show()
+		end
+
+		if statusBar.RightText then
+			-- right one contains the real values
+			statusBar.RightText:SetText(tostring(hp))
+			statusBar.RightText:Show()
+		end
+
+		if statusBar.TextString then
+			statusBar.TextString:Hide()
+		end
+	end
 end
 
 local function OnUpdateTextString(textString, unit)
@@ -42,15 +71,11 @@ local function OnHealthBarUpdate(statusBar, unit)
 		return
 	end
 
-	if not statusBar.TextString then
-		return
-	end
-
-	SetRealHealth(statusBar.TextString, unit)
+	SetRealHealth(statusBar, unit)
 
 	if not statusBar.MiniMobHealthHooked and statusBar.UpdateTextString then
 		hooksecurefunc(statusBar, "UpdateTextString", function()
-			OnUpdateTextString(statusBar.TextString, unit)
+			OnUpdateTextString(statusBar, unit)
 		end)
 
 		statusBar.MiniMobHealthHooked = true
