@@ -1,5 +1,5 @@
 local _, addon = ...
-addon.DebugMode = true
+addon.DebugMode = false
 ---@type MiniFramework
 local mini = addon.Framework
 local config = addon.Config
