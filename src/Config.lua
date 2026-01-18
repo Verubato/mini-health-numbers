@@ -16,9 +16,10 @@ function M:Init()
 		return
 	end
 
+	local version = C_AddOns.GetAddOnMetadata(addonName, "Version")
 	local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	title:SetPoint("TOPLEFT", 0, -16)
-	title:SetText(addonName)
+	title:SetPoint("TOPLEFT", 0, -verticalSpacing)
+	title:SetText(string.format("%s - %s", addonName, version))
 
 	local lines = mini:TextBlock({
 		Parent = panel,
