@@ -2,17 +2,16 @@ local _, addon = ...
 ---@type MiniFramework
 local mini = addon.Framework
 local config = addon.Config
-local eventsFrame
+---@type HealthTracker
+local tracker = addon.Tracker
 
 local function SetRealHealth(textString, unit)
-	if UnitIsPlayer(unit) then
-		-- TODO: In classic/tbc UnitHealth returns percentage for players
-		-- so we'd need to calculate it from combat log events
+	local hp, max = tracker:GetHealth(unit)
+
+	if not hp or not max then
 		return
 	end
 
-	local hp = UnitHealth(unit)
-	local max = UnitHealthMax(unit)
 	local text = string.format("%s/%s", hp, max)
 
 	textString:SetText(text)
@@ -52,10 +51,7 @@ end
 
 local function OnAddonLoaded()
 	config:Init()
-
-	eventsFrame = CreateFrame("Frame")
-	eventsFrame:SetScript("OnEvent", OnEvent)
-	eventsFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
+	tracker:Init()
 end
 
 if UnitFrameHealthBar_Update then

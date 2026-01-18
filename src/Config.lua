@@ -1,22 +1,12 @@
 local addonName, addon = ...
 ---@type MiniFramework
 local mini = addon.Framework
-
----@type Db
-local db
-
----@class Db
-local dbDefaults = {}
-
-local M = {
-	DbDefaults = dbDefaults,
-}
+local M = {}
 
 addon.Config = M
 
 function M:Init()
-	db = mini:GetSavedVars(dbDefaults)
-
+	local verticalSpacing = mini.VerticalSpacing
 	local panel = CreateFrame("Frame")
 	panel.name = addonName
 
@@ -30,9 +20,17 @@ function M:Init()
 	title:SetPoint("TOPLEFT", 0, -16)
 	title:SetText(addonName)
 
-	local subtitle = panel:CreateFontString(nil, "ARTWORK", "GameFontWhite")
-	subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -6)
-	subtitle:SetText("This addon does some things.")
+	local lines = mini:TextBlock({
+		Parent = panel,
+		Lines = {
+			"Important notes:",
+			"  - Mobs health is perfectly determined.",
+			"  - Health of players in your group is perfectly determined.",
+			"  - Everyone else (enemy players, non-grouped players) are guestimated based on combat log events.",
+		},
+	})
+
+	lines:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -verticalSpacing)
 
 	SLASH_MINITEMPLATE1 = "/minitemplate"
 	SLASH_MINITEMPLATE2 = "/minit"

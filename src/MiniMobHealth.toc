@@ -8,4 +8,5 @@
 
 MiniFramework.lua
 Config.lua
+HealthTracker.lua
 MiniMobHealth.lua
