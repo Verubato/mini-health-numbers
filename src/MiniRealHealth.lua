@@ -1,4 +1,5 @@
 local _, addon = ...
+addon.DebugMode = true
 ---@type MiniFramework
 local mini = addon.Framework
 local config = addon.Config
@@ -9,6 +10,13 @@ local function SetRealHealth(textString, unit)
 	local hp, max = tracker:GetHealth(unit)
 
 	if not hp or not max then
+		return
+	end
+
+	addon:DebugPrint("Tracker %s/%s, Blizzard %s/%s", hp, max, UnitHealth(unit), UnitHealthMax(unit))
+
+	if hp == 0 then
+		-- blizzard sets a "dead" text
 		return
 	end
 
@@ -52,6 +60,14 @@ end
 local function OnAddonLoaded()
 	config:Init()
 	tracker:Init()
+end
+
+function addon:DebugPrint(msg, ...)
+	if not addon.DebugMode then
+		return
+	end
+
+	mini:Notify(msg, ...)
 end
 
 if UnitFrameHealthBar_Update then
