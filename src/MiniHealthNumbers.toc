@@ -2,9 +2,10 @@
 ## Title: MiniHealthNumbers
 ## Notes: Shows the real health value of mobs and players instead of percentages.
 ## Author: Verz
-## Version: 0.0.1
+## Version: 1.0.0
 ## SavedVariables: MiniHealthNumbersDB
 ## IconTexture: Interface\AddOns\MiniHealthNumbers\Icon.blp
+## X-Curse-Project-ID: 1434957
 
 MiniFramework.lua
 Config.lua
