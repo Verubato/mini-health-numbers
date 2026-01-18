@@ -23,17 +23,18 @@ function M:Init()
 	local lines = mini:TextBlock({
 		Parent = panel,
 		Lines = {
-			"Important notes:",
-			"  - Mobs health is perfectly determined.",
-			"  - Health of players in your group is perfectly determined.",
-			"  - Everyone else (enemy players, non-grouped players) are guestimated based on combat log events.",
+			"Note:",
+			"  - Mob health is determined with full accuracy.",
+			"  - Players in your group are determined with full accuracy.",
+			"  - Everyone else (enemy players and non-grouped players) are estimated based on combat log events.",
 		},
 	})
 
 	lines:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -verticalSpacing)
 
-	SLASH_MINITEMPLATE1 = "/minitemplate"
-	SLASH_MINITEMPLATE2 = "/minit"
-
-	mini:RegisterSlashCommand(category, panel)
+	mini:RegisterSlashCommand(category, panel, {
+		"/minihealthnumbers",
+		"/minihn",
+		"/mhn",
+	})
 end
