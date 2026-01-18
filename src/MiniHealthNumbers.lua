@@ -177,8 +177,6 @@ local function OnEvent()
 	for unit, entry in pairs(watching) do
 		local isSameUnit = entry.UnitGuid == UnitGUID(unit)
 
-		addon:DebugPrint("Manually updating status bar for unit %s, same unit %s.", unit, tostring(isSameUnit))
-
 		if isSameUnit and entry.StatusBar:IsVisible() then
 			OnHealthBarUpdate(entry.StatusBar, unit)
 		else

@@ -257,8 +257,6 @@ end
 
 ---@param state StateEntry
 local function EndInference(state)
-	addon:DebugPrint("Ending inference for unit %s.", state.Unit)
-
 	local unit = state.Unit
 
 	if not unit or not UnitExists(unit) then
@@ -299,7 +297,6 @@ local function EndInference(state)
 	end
 
 	if netAmount == 0 then
-		addon:DebugPrint("No net changes for unit %s.", unit)
 		return
 	end
 
@@ -310,14 +307,11 @@ local function EndInference(state)
 	addon:DebugPrint("Percent before: %s, percent now: %s, net amount: %s.", percentBefore, percent, netAmount)
 
 	if percentDelta <= 0 then
-		addon:DebugPrint("Percent delta too small for unit %s, ignoring.", unit)
 		return
 	end
 
 	local inferredMax = amountDelta / percentDelta
 	ApplyInferredMax(state, inferredMax)
-
-	addon:DebugPrint("Updated inferred values for unit %s.", unit)
 end
 
 ---@param state StateEntry
@@ -327,8 +321,6 @@ local function BeginInference(state, amount)
 	if not unit or not UnitExists(unit) then
 		return
 	end
-
-	addon:DebugPrint("Beginning inference for %s, delta %s.", unit, amount)
 
 	local hp = UnitHealth(unit)
 	local max = UnitHealthMax(unit)
@@ -439,10 +431,6 @@ local function OnCombatLog()
 
 	if not state.Unit then
 		state.Unit = FindUnitByGUID(dstGUID)
-
-		if state.Unit then
-			addon:DebugPrint("Resolved unit %s = %s.", dstGUID, state.Unit)
-		end
 	end
 
 	if subevent == "SWING_DAMAGE" then
@@ -544,7 +532,6 @@ function M:Init()
 	eventsFrame = CreateFrame("Frame")
 	eventsFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	eventsFrame:RegisterEvent("UNIT_HEALTH")
-	--eventsFrame:RegisterEvent("UNIT_HEALTH_FREQUENT")
 
 	eventsFrame:SetScript("OnEvent", function(_, event, arg1)
 		if event == "COMBAT_LOG_EVENT_UNFILTERED" then
