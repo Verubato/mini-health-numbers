@@ -4,6 +4,8 @@ local mini = addon.Framework
 local db
 local eventsFrame
 local initialised = false
+-- 0 = never update, 1 = instant update
+local lerpSpeed = 0.2
 
 ---@type { [string]: StateEntry }
 local data = {}
@@ -40,6 +42,15 @@ end
 
 local function Now()
 	return GetTimePreciseSec()
+end
+
+---Linear interpolation.
+---@param current number
+---@param target number
+---@param speed number 0..1
+---@return number
+local function Lerp(current, target, speed)
+	return current + (target - current) * speed
 end
 
 ---@param unit string
@@ -200,7 +211,12 @@ local function ApplyInferredMax(state, newMax)
 		return
 	end
 
-	state.Max = newMax
+	if state.Max and state.Max > 0 then
+		-- smooth updates to avoid big jumps from noisy samples
+		state.Max = Lerp(state.Max, newMax, lerpSpeed)
+	else
+		state.Max = newMax
+	end
 end
 
 ---@param state StateEntry
@@ -469,7 +485,7 @@ function M:GetHealth(unit)
 		return nil, nil
 	end
 
-	if not state.Max or not state.LastPercent == nil then
+	if not state.Max or state.LastPercent == nil then
 		return nil, nil
 	end
 
@@ -492,7 +508,7 @@ function M:Init()
 	eventsFrame = CreateFrame("Frame")
 	eventsFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
 	eventsFrame:RegisterEvent("UNIT_HEALTH")
-	eventsFrame:RegisterEvent("UNIT_HEALTH_FREQUENT")
+	--eventsFrame:RegisterEvent("UNIT_HEALTH_FREQUENT")
 
 	eventsFrame:SetScript("OnEvent", function(_, event, arg1)
 		if event == "COMBAT_LOG_EVENT_UNFILTERED" then
