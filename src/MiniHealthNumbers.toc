@@ -1,4 +1,4 @@
-## Interface: 20505
+## Interface: 20505, 11508
 ## Title: MiniHealthNumbers
 ## Notes: Shows the real health value of mobs and players instead of percentages.
 ## Author: Verz
