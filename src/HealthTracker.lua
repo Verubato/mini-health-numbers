@@ -4,8 +4,6 @@ local mini = addon.Framework
 local db
 local eventsFrame
 local initialised = false
--- 0 = never update, 1 = instant update
-local lerpSpeed = 0.2
 
 ---@type { [string]: StateEntry }
 local data = {}
@@ -42,6 +40,43 @@ end
 
 local function Now()
 	return GetTimePreciseSec()
+end
+
+local function Clamp(x, min, max)
+	if x < min then
+		return min
+	end
+
+	if x > max then
+		return max
+	end
+
+	return x
+end
+
+---Choose an interpolation strength based on how far apart the values are.
+---@param currentMax number
+---@param newMax number
+---@return number alpha 0..1
+local function GetAdaptiveSpeed(currentMax, newMax)
+	-- how different are we, relative to our current value?
+	local relativeError = math.abs(newMax - currentMax) / math.max(currentMax, 1)
+
+	-- gentle smoothing when estimates are similar
+	local speedWhenClose = 0.15
+	-- fast movement when estimates are very different
+	local speedWhenFar = 0.85
+	-- 50% difference counts as very different
+	local errorForMaxAlpha = 0.50
+
+	-- scale the error into 0..1
+	local scale = relativeError / errorForMaxAlpha
+
+	scale = Clamp(scale, 0, 1)
+
+	-- interpolate between slow and fast update speeds
+	local speed = speedWhenClose + (speedWhenFar - speedWhenClose) * scale
+	return speed
 end
 
 ---Linear interpolation.
@@ -213,7 +248,8 @@ local function ApplyInferredMax(state, newMax)
 
 	if state.Max and state.Max > 0 then
 		-- smooth updates to avoid big jumps from noisy samples
-		state.Max = Lerp(state.Max, newMax, lerpSpeed)
+		local speed = GetAdaptiveSpeed(state.Max, newMax)
+		state.Max = Lerp(state.Max, newMax, speed)
 	else
 		state.Max = newMax
 	end
