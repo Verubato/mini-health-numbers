@@ -75,30 +75,21 @@ local function Touch(guid, unit)
 end
 
 ---@param state StateEntry
----@param unit string
-local function RefreshObservedPercent(state, unit)
+local function ObserveHealth(state)
+	local unit = state.Unit
+
 	if not unit or not UnitExists(unit) then
 		return
 	end
 
-	state.Unit = unit
+	local percent = unitUtil:UnitHealthPercent(unit)
 
-	local p = unitUtil:GetUnitPercent(unit)
-	if p ~= nil then
-		state.LastPercent = p
-		state.LastPercentAt = Now()
-	end
-end
-
----@param state StateEntry
----@param unit string
-local function BindUnit(state, unit)
-	if not UnitExists(unit) then
+	if percent == nil then
 		return
 	end
 
-	state.Unit = unit
-	state.LastPercent = unitUtil:GetUnitPercent(unit) or state.LastPercent
+	state.LastPercent = percent
+	state.LastPercentAt = Now()
 end
 
 ---@param state StateEntry
@@ -118,78 +109,71 @@ local function ApplyInferredMax(state, newMax)
 end
 
 ---@param state StateEntry
-local function EndInference(state)
-	local unit = state.Unit
+local function TryEndInference(state)
+	local pending = state.Pending
 
-	if not unit or not UnitExists(unit) then
-		return
+	if not pending or not pending.StartPercent or state.LastPercent == nil then
+		return false
 	end
 
+	-- if we timed out, discard
+	if (Now() - (pending.StartedAt or 0)) > pendingTimeoutSeconds then
+		state.Pending = nil
+		return false
+	end
+
+	local before = pending.StartPercent
+	local after = state.LastPercent
+	local netAmount = pending.NetAmount or 0
+	local percentDelta = math.abs(after - before)
+
+	if state.Unit then
+		addon:DebugPrint(
+			"%s: percent before: %s, percent now: %s, net amount: %s.",
+			UnitName(state.Unit),
+			before,
+			after,
+			netAmount
+		)
+	end
+
+	if percentDelta <= 0 or netAmount == 0 then
+		return false
+	end
+
+	local inferredMax = math.abs(netAmount) / percentDelta
+	ApplyInferredMax(state, inferredMax)
+
+	state.Pending = nil
+	return true
+end
+
+---@param state StateEntry
+---@param netAmount number
+local function ContinueInference(state, netAmount)
 	local pending = state.Pending
 
 	if not pending then
+		state.Pending = {
+			NetAmount = netAmount,
+			StartedAt = Now(),
+			StartPercent = state.LastPercent,
+		}
+
 		return
 	end
 
 	if pending.StartedAt and (Now() - pending.StartedAt) > pendingTimeoutSeconds then
-		addon:DebugPrint("Pending event was too stale, ignoring.")
-		state.Pending = nil
-		return
-	end
-
-	local percent = state.LastPercent
-	local percentBefore = pending.PercentBefore
-	local netAmount = pending.NetAmount or 0
-
-	-- clear pending no matter what; we got our read window
-	state.Pending = nil
-
-	-- Need a baseline percent to compare against
-	if percent == nil or percentBefore == nil then
-		return
-	end
-
-	if netAmount == 0 then
-		return
-	end
-
-	local percentDelta = math.abs(percent - percentBefore)
-	local amountDelta = math.abs(netAmount)
-
-	addon:DebugPrint("Percent before: %s, percent now: %s, net amount: %s.", percentBefore, percent, netAmount)
-
-	if percentDelta <= 0 then
-		return
-	end
-
-	local inferredMax = amountDelta / percentDelta
-	ApplyInferredMax(state, inferredMax)
-end
-
----@param state StateEntry
----@param amount number
-local function BeginInference(state, amount)
-	local unit = state.Unit
-
-	if not unit or not UnitExists(unit) then
-		return
-	end
-
-	RefreshObservedPercent(state, unit)
-
-	local pending = state.Pending
-
-	if pending then
+		-- window is too old, start a new one
+		state.Pending = {
+			NetAmount = netAmount,
+			StartedAt = Now(),
+			StartPercent = state.LastPercent,
+		}
+	else
 		-- accumulate into the same window
-		pending.NetAmount = (pending.NetAmount or 0) + amount
-		return
+		pending.NetAmount = (pending.NetAmount or 0) + netAmount
 	end
-
-	state.Pending = {
-		NetAmount = amount,
-		StartedAt = Now(),
-		PercentBefore = state.LastPercent,
-	}
 end
 
 local function OnUnitHealth(_, unit)
@@ -207,19 +191,33 @@ local function OnUnitHealth(_, unit)
 		return
 	end
 
-	local state = data[guid]
+	local state = Touch(guid, unit)
 
-	if not state or not state.Pending then
+	if not state then
 		return
 	end
 
-	RefreshObservedPercent(state, unit)
+	-- Only proceed if health changed
+	local newPercent = unitUtil:UnitHealthPercent(unit)
 
-	if not state.Pending then
+	if newPercent == nil or newPercent == state.LastPercent then
 		return
 	end
 
-	EndInference(state)
+	addon:DebugPrint("Health event for %s, pending %s.", unit, state.Pending and state.Pending.NetAmount or 0)
+
+	-- refresh their new hp values
+	ObserveHealth(state)
+
+	-- If this is the first health observation after we started a pending window
+	-- backfill the starting value to ensure a valid starting point
+	if state.Pending and state.Pending.StartPercent == nil then
+		state.Pending.StartPercent = state.LastPercent
+	end
+
+	if state.Pending then
+		TryEndInference(state)
+	end
 end
 
 local function OnCombatLog()
@@ -250,18 +248,32 @@ local function OnCombatLog()
 		state.Unit = UnitTokenFromGUID(dstGUID)
 	end
 
+	if not state.Unit then
+		-- can't map to a unit, so we can't do anything with this data
+		return
+	end
+
+	local netAmount = nil
+
 	if subevent == "SWING_DAMAGE" then
-		local amount = combatLog:GetSwingDamageAmount()
-		BeginInference(state, -amount)
+		netAmount = -combatLog:GetSwingDamageAmount()
 	elseif subevent == "SPELL_DAMAGE" or subevent == "RANGE_DAMAGE" or subevent == "SPELL_PERIODIC_DAMAGE" then
-		local amount = combatLog:GetSpellDamageAmount()
-		BeginInference(state, -amount)
+		netAmount = -combatLog:GetSpellDamageAmount()
 	elseif subevent == "SPELL_HEAL" or subevent == "SPELL_PERIODIC_HEAL" then
-		local amount = combatLog:GetSpellHealAmount()
-		BeginInference(state, amount)
+		netAmount = combatLog:GetSpellHealAmount()
 	elseif subevent == "UNIT_DIED" or subevent == "UNIT_DESTROYED" then
 		state.LastPercent = 0
+		state.LastPercentAt = Now()
 		state.Pending = nil
+	end
+
+	if netAmount and math.abs(netAmount) > 0 then
+		addon:DebugPrint("%s: %s damage/heal.", state.Unit, tostring(netAmount))
+
+		-- update the pending amounts
+		ContinueInference(state, netAmount)
+
+		state.LastSeen = Now()
 	end
 end
 
@@ -284,7 +296,7 @@ function M:GetHealth(unit)
 	end
 
 	if UnitIsUnit(unit, "player") then
-		return nil, nil
+		return UnitHealth("player"), UnitHealthMax("player")
 	end
 
 	if not addon.DebugMode then
@@ -312,8 +324,8 @@ function M:GetHealth(unit)
 		return nil, nil, nil
 	end
 
-	-- bind this unit to the guid
-	BindUnit(state, unit)
+	-- capture the current hp values
+	ObserveHealth(state)
 
 	if (Now() - (state.LastSeen or 0)) > staleSeconds then
 		data[guid] = nil
@@ -324,7 +336,7 @@ function M:GetHealth(unit)
 		return nil, nil
 	end
 
-	local percent = unitUtil:GetUnitPercent(state.Unit)
+	local percent = unitUtil:UnitHealthPercent(state.Unit)
 	local max = math.floor(state.Max)
 	local current = math.floor(max * percent)
 
@@ -347,7 +359,7 @@ function M:Init()
 	eventsFrame:SetScript("OnEvent", function(_, event, arg1)
 		if event == "COMBAT_LOG_EVENT_UNFILTERED" then
 			OnCombatLog()
-		elseif event == "UNIT_HEALTH" or event == "UNIT_HEALTH_FREQUENT" then
+		elseif event == "UNIT_HEALTH" then
 			OnUnitHealth(event, arg1)
 		end
 	end)
@@ -360,7 +372,7 @@ end
 ---@class PendingEvent
 ---@field NetAmount number
 ---@field StartedAt number
----@field PercentBefore number|nil
+---@field StartPercent number|nil
 
 ---@class StateEntry
 ---@field Unit string|nil

@@ -27,7 +27,7 @@ end
 
 ---@param unit string
 ---@return number|nil
-function M:GetUnitPercent(unit)
+function M:UnitHealthPercent(unit)
 	if not UnitExists(unit) then
 		return nil
 	end

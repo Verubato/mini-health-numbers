@@ -1,6 +1,6 @@
 ---@type string, Addon
 local _, addon = ...
-addon.DebugMode = false
+addon.DebugMode = true
 local mini = addon.Framework
 local config = addon.Config
 local tracker = addon.Tracker
@@ -73,11 +73,11 @@ end
 local function SetRealHealth(statusBar, unit)
 	local hp, max = tracker:GetHealth(unit)
 
+	addon:DebugPrint("Addon %s/%s, Blizzard %s/%s", hp or "nil", max or "nil", UnitHealth(unit), UnitHealthMax(unit))
+
 	if not hp or not max then
 		return false
 	end
-
-	addon:DebugPrint("Tracker %s/%s, Blizzard %s/%s", hp, max, UnitHealth(unit), UnitHealthMax(unit))
 
 	if hp == 0 then
 		-- blizzard sets a "dead" text
