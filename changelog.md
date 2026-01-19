@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.0
+
+Abbreviated large numbers.
+
 ## 1.2.0
 
 Greatly improved the health detection algorithm.
