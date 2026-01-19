@@ -4,6 +4,7 @@ addon.DebugMode = false
 local mini = addon.Framework
 local config = addon.Config
 local tracker = addon.Tracker
+local numerics = addon.Numerics
 local eventsFrame
 -- classic era doesn't have STATUS_TEXT_DISPLAY_MODE
 local percentMode = STATUS_TEXT_DISPLAY_MODE and STATUS_TEXT_DISPLAY_MODE.PERCENT or "PERCENT"
@@ -84,6 +85,9 @@ local function SetRealHealth(statusBar, unit)
 		return false
 	end
 
+	local hpAbbreviated = numerics:Abbreviate(hp)
+	local maxAbbreviated = numerics:Abbreviate(max)
+
 	local displayMode = GetCVar("statusTextDisplay")
 
 	if not displayMode then
@@ -100,7 +104,7 @@ local function SetRealHealth(statusBar, unit)
 		-- it doesn't make much sense with percent mode and this addon
 		-- so just use real values to avoid bug reports
 		if center then
-			local text = string.format("%s/%s", hp, max)
+			local text = string.format("%s/%s", hpAbbreviated, maxAbbreviated)
 			center:SetText(text)
 			center:Show()
 		end
@@ -114,7 +118,7 @@ local function SetRealHealth(statusBar, unit)
 
 		if right then
 			-- right one contains the real values
-			right:SetText(tostring(hp))
+			right:SetText(tostring(hpAbbreviated))
 			right:Show()
 		end
 

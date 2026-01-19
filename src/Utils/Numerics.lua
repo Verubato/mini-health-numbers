@@ -56,3 +56,12 @@ end
 function M:Lerp(current, target, speed)
 	return current + (target - current) * speed
 end
+
+function M:Abbreviate(number)
+	if AbbreviateNumbers then
+		return AbbreviateNumbers(number)
+	end
+
+	-- classic and tbc have AbbreviateNumbers, so it's unlikely we'll ever hit this fallback
+	return number
+end
