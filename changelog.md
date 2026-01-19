@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.2.0
+
+Greatly improved the health detection algorithm.
+
 ## 1.1.0
 
 - Added classic era support.
