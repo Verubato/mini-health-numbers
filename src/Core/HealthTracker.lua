@@ -289,7 +289,38 @@ end
 
 ---@return number|nil current
 ---@return number|nil max
----@return number|nil confidence
+function M:GetHealthByGuid(guid)
+	if not guid then
+		return nil, nil
+	end
+
+	local state = data[guid]
+
+	if not state then
+		return nil, nil
+	end
+
+	-- capture the current hp values
+	ObserveHealth(state)
+
+	if (Now() - (state.LastSeen or 0)) > staleSeconds then
+		data[guid] = nil
+		return nil, nil
+	end
+
+	if not state.Max or state.LastPercent == nil then
+		return nil, nil
+	end
+
+	local percent = unitUtil:UnitHealthPercent(state.Unit)
+	local max = math.floor(state.Max)
+	local current = math.floor(max * percent)
+
+	return current, max
+end
+
+---@return number|nil current
+---@return number|nil max
 function M:GetHealth(unit)
 	if not unit or not UnitExists(unit) then
 		return nil, nil
@@ -315,32 +346,11 @@ function M:GetHealth(unit)
 	local guid = UnitGUID(unit)
 
 	if not guid then
-		return nil, nil, nil
-	end
-
-	local state = Touch(guid, unit)
-
-	if not state then
-		return nil, nil, nil
-	end
-
-	-- capture the current hp values
-	ObserveHealth(state)
-
-	if (Now() - (state.LastSeen or 0)) > staleSeconds then
-		data[guid] = nil
 		return nil, nil
 	end
 
-	if not state.Max or state.LastPercent == nil then
-		return nil, nil
-	end
-
-	local percent = unitUtil:UnitHealthPercent(state.Unit)
-	local max = math.floor(state.Max)
-	local current = math.floor(max * percent)
-
-	return current, max
+	Touch(guid, unit)
+	return M:GetHealthByGuid(guid)
 end
 
 function M:Init()

@@ -12,5 +12,6 @@ Utils\UnitUtil.lua
 Utils\CombatLogParser.lua
 Core\MiniFramework.lua
 Core\HealthTracker.lua
+Core\Api.lua
 Config\Config.lua
 MiniHealthNumbers.lua
