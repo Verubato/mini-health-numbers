@@ -7,7 +7,9 @@
 ## IconTexture: Interface\AddOns\MiniHealthNumbers\Icon.blp
 ## X-Curse-Project-ID: 1434957
 
-MiniFramework.lua
-Config.lua
-HealthTracker.lua
+Utils\Numerics.lua
+Utils\UnitUtil.lua
+Core\MiniFramework.lua
+Core\HealthTracker.lua
+Config\Config.lua
 MiniHealthNumbers.lua

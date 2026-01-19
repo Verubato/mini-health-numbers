@@ -1,6 +1,10 @@
 local _, addon = ...
 ---@type MiniFramework
 local mini = addon.Framework
+---@type Numerics
+local numerics = addon.Numerics
+---@type UnitUtil
+local unitUtil = addon.UnitUtil
 local db
 local eventsFrame
 local initialised = false
@@ -18,40 +22,8 @@ local pendingTimeoutSeconds = 30
 local M = {}
 addon.Tracker = M
 
-local function IsUnitInMyGroup(unit)
-	return UnitIsUnit(unit, "player") or UnitInParty(unit) or UnitInRaid(unit)
-end
-
-local function IsPet(unit)
-	if UnitIsUnit(unit, "pet") then
-		return true
-	end
-
-	if UnitIsOtherPlayersPet(unit) then
-		return true
-	end
-
-	return false
-end
-
-local function IsPlayerGUID(guid)
-	return type(guid) == "string" and guid:match("^Player%-")
-end
-
 local function Now()
 	return GetTimePreciseSec()
-end
-
-local function Clamp(x, min, max)
-	if x < min then
-		return min
-	end
-
-	if x > max then
-		return max
-	end
-
-	return x
 end
 
 ---Choose an interpolation strength based on how far apart the values are.
@@ -67,47 +39,16 @@ local function GetAdaptiveSpeed(currentMax, newMax)
 	-- fast movement when estimates are very different
 	local speedWhenFar = 0.85
 	-- 50% difference counts as very different
-	local errorForMaxAlpha = 0.50
+	local errorForMaxSpeed = 0.50
 
 	-- scale the error into 0..1
-	local scale = relativeError / errorForMaxAlpha
+	local scale = relativeError / errorForMaxSpeed
 
-	scale = Clamp(scale, 0, 1)
+	scale = numerics:Clamp(scale, 0, 1)
 
 	-- interpolate between slow and fast update speeds
 	local speed = speedWhenClose + (speedWhenFar - speedWhenClose) * scale
 	return speed
-end
-
----Linear interpolation.
----@param current number
----@param target number
----@param speed number 0..1
----@return number
-local function Lerp(current, target, speed)
-	return current + (target - current) * speed
-end
-
----@param unit string
----@return number|nil
-local function GetUnitPercent(unit)
-	if not UnitExists(unit) then
-		return nil
-	end
-
-	local max = UnitHealthMax(unit)
-
-	if not max or max <= 0 then
-		return nil
-	end
-
-	local cur = UnitHealth(unit)
-
-	if cur == nil or cur < 0 then
-		return nil
-	end
-
-	return cur / max
 end
 
 ---@param guid string
@@ -141,7 +82,7 @@ local function BindUnit(state, unit)
 	end
 
 	state.Unit = unit
-	state.LastPercent = GetUnitPercent(unit) or state.LastPercent
+	state.LastPercent = unitUtil:GetUnitPercent(unit) or state.LastPercent
 end
 
 ---@param state StateEntry
@@ -154,7 +95,7 @@ local function ApplyInferredMax(state, newMax)
 	if state.Max and state.Max > 0 then
 		-- smooth updates to avoid big jumps from noisy samples
 		local speed = GetAdaptiveSpeed(state.Max, newMax)
-		state.Max = Lerp(state.Max, newMax, speed)
+		state.Max = numerics:Lerp(state.Max, newMax, speed)
 	else
 		state.Max = newMax
 	end
@@ -318,7 +259,7 @@ local function OnCombatLog()
 	end
 
 	if not addon.DebugMode then
-		if not IsPlayerGUID(dstGUID) then
+		if not unitUtil:IsPlayerGUID(dstGUID) then
 			return
 		end
 	end
@@ -376,12 +317,12 @@ function M:GetHealth(unit)
 	end
 
 	if not addon.DebugMode then
-		if IsUnitInMyGroup(unit) then
+		if  unitUtil:IsUnitInMyGroup(unit) then
 			-- grouped units are reliably calculated
 			return UnitHealth(unit), UnitHealthMax(unit)
 		end
 
-		if not UnitIsPlayer(unit) and not IsPet(unit) then
+		if not UnitIsPlayer(unit) and not unitUtil:IsPet(unit) then
 			-- mobs are reliably calculated
 			return UnitHealth(unit), UnitHealthMax(unit)
 		end
@@ -418,7 +359,7 @@ function M:GetHealth(unit)
 		return nil, nil
 	end
 
-	local percent = GetUnitPercent(state.Unit)
+	local percent = unitUtil:GetUnitPercent(state.Unit)
 	local max = math.floor(state.Max)
 	local current = math.floor(max * percent)
 
