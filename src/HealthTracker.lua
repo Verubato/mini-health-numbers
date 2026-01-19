@@ -133,101 +133,6 @@ local function Touch(guid, unit)
 	return state
 end
 
----@param guid string
----@return string|nil unitToken
-local function FindUnitByGUID(guid)
-	if not guid then
-		return nil
-	end
-
-	local quickUnits = {
-		"player",
-		"target",
-		"targettarget",
-		"focus",
-		"focustarget",
-		"mouseover",
-		"pet",
-		"vehicle",
-	}
-
-	for _, unit in ipairs(quickUnits) do
-		if UnitExists(unit) and UnitGUID(unit) == guid then
-			return unit
-		end
-	end
-
-	for i = 1, (MAX_PARTY_MEMBERS or 4) do
-		local unit = "party" .. i
-		if UnitExists(unit) and UnitGUID(unit) == guid then
-			return unit
-		end
-
-		local pet = "partypet" .. i
-		if UnitExists(pet) and UnitGUID(pet) == guid then
-			return pet
-		end
-	end
-
-	for i = 1, (MAX_RAID_MEMBERS or 40) do
-		local unit = "raid" .. i
-		if UnitExists(unit) and UnitGUID(unit) == guid then
-			return unit
-		end
-
-		local pet = "raidpet" .. i
-		if UnitExists(pet) and UnitGUID(pet) == guid then
-			return pet
-		end
-	end
-
-	for i = 1, 5 do
-		local unit = "arena" .. i
-		if UnitExists(unit) and UnitGUID(unit) == guid then
-			return unit
-		end
-
-		local pet = "arenapet" .. i
-		if UnitExists(pet) and UnitGUID(pet) == guid then
-			return pet
-		end
-	end
-
-	for i = 1, 8 do
-		local unit = "boss" .. i
-		if UnitExists(unit) and UnitGUID(unit) == guid then
-			return unit
-		end
-	end
-
-	if C_NamePlate and C_NamePlate.GetNamePlates then
-		for _, frame in ipairs(C_NamePlate.GetNamePlates()) do
-			local unit = frame.namePlateUnitToken
-			if unit and UnitGUID(unit) == guid then
-				return unit
-			end
-		end
-	end
-
-	if CompactPartyFrame then
-		for _, frame in ipairs({ CompactPartyFrame:GetChildren() }) do
-			if frame.unit and UnitGUID(frame.unit) == guid then
-				return frame.unit
-			end
-		end
-	end
-
-	if CompactRaidFrameContainer then
-		for _, frame in ipairs({ CompactRaidFrameContainer:GetChildren() }) do
-			if frame.unit and UnitGUID(frame.unit) == guid then
-				return frame.unit
-			end
-		end
-	end
-
-	return nil
-end
-
 ---@param state StateEntry
 ---@param unit string
 local function BindUnit(state, unit)
@@ -429,8 +334,8 @@ local function OnCombatLog()
 		return
 	end
 
-	if not state.Unit then
-		state.Unit = FindUnitByGUID(dstGUID)
+	if not state.Unit and UnitTokenFromGUID then
+		state.Unit = UnitTokenFromGUID(dstGUID)
 	end
 
 	if subevent == "SWING_DAMAGE" then
