@@ -1,10 +1,9 @@
+---@type string, Addon
 local _, addon = ...
----@type MiniFramework
 local mini = addon.Framework
----@type Numerics
 local numerics = addon.Numerics
----@type UnitUtil
 local unitUtil = addon.UnitUtil
+local combatLog = addon.CombatLogParser
 local db
 local eventsFrame
 local initialised = false
@@ -224,33 +223,6 @@ local function OnUnitHealth(_, unit)
 	BeginInference(state, 0)
 end
 
-local function GetSwingDamageAmount()
-	local amount, overkill = select(12, CombatLogGetCurrentEventInfo())
-	local effective = amount - overkill
-
-	return math.max(0, effective)
-end
-
-local function GetSpellDamageAmount()
-	local amount, overkill = select(15, CombatLogGetCurrentEventInfo())
-
-	amount = tonumber(amount) or 0
-	overkill = tonumber(overkill) or 0
-
-	local effective = amount - overkill
-	return math.max(0, effective)
-end
-
-local function GetSpellHealAmount()
-	local amount, overheal = select(15, CombatLogGetCurrentEventInfo())
-
-	amount = tonumber(amount) or 0
-	overheal = tonumber(overheal) or 0
-
-	local effective = amount - overheal
-	return math.max(0, effective)
-end
-
 local function OnCombatLog()
 	local _, subevent, _, _, _, _, _, dstGUID = CombatLogGetCurrentEventInfo()
 
@@ -280,13 +252,13 @@ local function OnCombatLog()
 	end
 
 	if subevent == "SWING_DAMAGE" then
-		local amount = GetSwingDamageAmount()
+		local amount = combatLog:GetSwingDamageAmount()
 		BeginInference(state, -amount)
 	elseif subevent == "SPELL_DAMAGE" or subevent == "RANGE_DAMAGE" or subevent == "SPELL_PERIODIC_DAMAGE" then
-		local amount = GetSpellDamageAmount()
+		local amount = combatLog:GetSpellDamageAmount()
 		BeginInference(state, -amount)
 	elseif subevent == "SPELL_HEAL" or subevent == "SPELL_PERIODIC_HEAL" then
-		local amount = GetSpellHealAmount()
+		local amount = combatLog:GetSpellHealAmount()
 		BeginInference(state, amount)
 	elseif subevent == "UNIT_DIED" or subevent == "UNIT_DESTROYED" then
 		state.LastPercent = 0
@@ -317,7 +289,7 @@ function M:GetHealth(unit)
 	end
 
 	if not addon.DebugMode then
-		if  unitUtil:IsUnitInMyGroup(unit) then
+		if unitUtil:IsUnitInMyGroup(unit) then
 			-- grouped units are reliably calculated
 			return UnitHealth(unit), UnitHealthMax(unit)
 		end

@@ -1,9 +1,8 @@
+---@type string, Addon
 local _, addon = ...
 addon.DebugMode = false
----@type MiniFramework
 local mini = addon.Framework
 local config = addon.Config
----@type HealthTracker
 local tracker = addon.Tracker
 local eventsFrame
 -- classic era doesn't have STATUS_TEXT_DISPLAY_MODE
@@ -212,6 +211,16 @@ eventsFrame:RegisterEvent("UNIT_HEALTH")
 eventsFrame:SetScript("OnEvent", OnEvent)
 
 mini:WaitForAddonLoad(OnAddonLoaded)
+
+---@class Addon
+---@field Framework MiniFramework
+---@field Tracker HealthTracker
+---@field UnitUtil UnitUtil
+---@field Numerics Numerics
+---@field CombatLogParser CombatLogParser
+---@field Config Config
+---@field DebugMode boolean
+---@field DebugPrint fun(self: table, msg: string, ...)
 
 ---@class WatchEntry
 ---@field StatusBar table

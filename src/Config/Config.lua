@@ -1,6 +1,8 @@
+---@type string, Addon
 local addonName, addon = ...
----@type MiniFramework
 local mini = addon.Framework
+
+---@class Config
 local M = {}
 
 addon.Config = M

@@ -1,3 +1,4 @@
+---@type string, Addon
 local addonName, addon = ...
 local loader = CreateFrame("Frame")
 local loaded = false
