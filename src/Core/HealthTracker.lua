@@ -62,6 +62,7 @@ local function Touch(guid, unit)
 			LastSeen = Now(),
 			Unit = unit,
 			LastPercent = nil,
+			LastPercentAt = nil,
 			Pending = nil,
 		}
 		data[guid] = state
@@ -71,6 +72,22 @@ local function Touch(guid, unit)
 	end
 
 	return state
+end
+
+---@param state StateEntry
+---@param unit string
+local function RefreshObservedPercent(state, unit)
+	if not unit or not UnitExists(unit) then
+		return
+	end
+
+	state.Unit = unit
+
+	local p = unitUtil:GetUnitPercent(unit)
+	if p ~= nil then
+		state.LastPercent = p
+		state.LastPercentAt = Now()
+	end
 end
 
 ---@param state StateEntry
@@ -120,16 +137,7 @@ local function EndInference(state)
 		return
 	end
 
-	local hp = UnitHealth(unit)
-	local max = UnitHealthMax(unit)
-
-	if hp == nil or max == nil or max <= 0 then
-		return
-	end
-
-	local percent = hp / max
-	state.LastPercent = percent
-
+	local percent = state.LastPercent
 	local percentBefore = pending.PercentBefore
 	local netAmount = pending.NetAmount or 0
 
@@ -137,7 +145,7 @@ local function EndInference(state)
 	state.Pending = nil
 
 	-- Need a baseline percent to compare against
-	if percentBefore == nil then
+	if percent == nil or percentBefore == nil then
 		return
 	end
 
@@ -145,8 +153,7 @@ local function EndInference(state)
 		return
 	end
 
-	local percentDeltaSigned = percent - percentBefore
-	local percentDelta = math.abs(percentDeltaSigned)
+	local percentDelta = math.abs(percent - percentBefore)
 	local amountDelta = math.abs(netAmount)
 
 	addon:DebugPrint("Percent before: %s, percent now: %s, net amount: %s.", percentBefore, percent, netAmount)
@@ -163,20 +170,12 @@ end
 ---@param amount number
 local function BeginInference(state, amount)
 	local unit = state.Unit
+
 	if not unit or not UnitExists(unit) then
 		return
 	end
 
-	local hp = UnitHealth(unit)
-	local max = UnitHealthMax(unit)
-
-	if hp == nil or max == nil or max <= 0 then
-		return
-	end
-
-	local percent = hp / max
-
-	state.LastPercent = percent
+	RefreshObservedPercent(state, unit)
 
 	local pending = state.Pending
 
@@ -189,7 +188,7 @@ local function BeginInference(state, amount)
 	state.Pending = {
 		NetAmount = amount,
 		StartedAt = Now(),
-		PercentBefore = percent,
+		PercentBefore = state.LastPercent,
 	}
 end
 
@@ -214,13 +213,13 @@ local function OnUnitHealth(_, unit)
 		return
 	end
 
-	-- Keep the unit up to date
-	state.Unit = unit
+	RefreshObservedPercent(state, unit)
+
+	if not state.Pending then
+		return
+	end
 
 	EndInference(state)
-
-	-- important: begin a new inference to capture the current hp values
-	BeginInference(state, 0)
 end
 
 local function OnCombatLog()
@@ -316,12 +315,6 @@ function M:GetHealth(unit)
 	-- bind this unit to the guid
 	BindUnit(state, unit)
 
-	-- start inferring if one isn't already pending
-	-- so we can get the real hp values quicker
-	if not state.Pending then
-		BeginInference(state, 0)
-	end
-
 	if (Now() - (state.LastSeen or 0)) > staleSeconds then
 		data[guid] = nil
 		return nil, nil
@@ -374,4 +367,5 @@ end
 ---@field Max number|nil
 ---@field LastSeen number
 ---@field LastPercent number|nil
+---@field LastPercentAt number|nil
 ---@field Pending PendingEvent|nil
