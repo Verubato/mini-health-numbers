@@ -1,6 +1,6 @@
 ---@type string, Addon
 local _, addon = ...
-addon.DebugMode = true
+addon.DebugMode = false
 local mini = addon.Framework
 local config = addon.Config
 local tracker = addon.Tracker
