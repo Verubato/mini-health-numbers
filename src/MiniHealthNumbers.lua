@@ -15,17 +15,32 @@ local bothMode = STATUS_TEXT_DISPLAY_MODE and STATUS_TEXT_DISPLAY_MODE.BOTH or "
 ---@type { string: WatchEntry }
 local watching = {}
 
+local function IsClassic()
+	return LE_EXPANSION_LEVEL_CURRENT ~= nil
+		and LE_EXPANSION_CLASSIC ~= nil
+		and LE_EXPANSION_LEVEL_CURRENT == LE_EXPANSION_CLASSIC
+end
+
 local function ClassicShims(statusBar)
 	-- classic era doesn't have any text strings on the target frame, so let's create them
 	-- blizzard is mucking around with our texts when we create them as TextString/LeftText/RightText
 	-- so don't use those fields when we shim
 	local font = "TextStatusBarText"
-	local left = statusBar.LeftText or statusBar.MhnLeftText
-	local center = statusBar.TextString or statusBar.MhnTextString
-	local right = statusBar.RightText or statusBar.MhnRightText
+	local left = statusBar.MhnLeftText
+	local center = statusBar.MhnTextString
+	local right = statusBar.MhnRightText
+	-- in classic the target frame health bar strata is too low
+	-- so we make an overlay to fix that
+	local overlay = statusBar.MhnOverlay
+
+	if not overlay then
+		overlay = CreateFrame("Frame", statusBar)
+		overlay:SetFrameLevel(statusBar:GetParent():GetFrameLevel() + 1)
+		statusBar.MhnOverlay = overlay
+	end
 
 	if not left then
-		local fs = statusBar:CreateFontString(nil, "OVERLAY")
+		local fs = overlay:CreateFontString(nil, "OVERLAY")
 		statusBar.MhnLeftText = fs
 
 		fs:SetFontObject(font)
@@ -35,7 +50,7 @@ local function ClassicShims(statusBar)
 	end
 
 	if not center then
-		local fs = statusBar:CreateFontString(nil, "OVERLAY")
+		local fs = overlay:CreateFontString(nil, "OVERLAY")
 		statusBar.MhnTextString = fs
 
 		fs:SetFontObject(font)
@@ -46,7 +61,7 @@ local function ClassicShims(statusBar)
 	end
 
 	if not right then
-		local fs = statusBar:CreateFontString(nil, "OVERLAY")
+		local fs = overlay:CreateFontString(nil, "OVERLAY")
 		statusBar.MhnRightText = fs
 
 		fs:SetFontObject(font)
@@ -96,7 +111,9 @@ local function SetRealHealth(statusBar, unit)
 		return false
 	end
 
-	ClassicShims(statusBar)
+	if IsClassic() then
+		ClassicShims(statusBar)
+	end
 
 	local left = statusBar.LeftText or statusBar.MhnLeftText
 	local center = statusBar.TextString or statusBar.MhnTextString
@@ -163,8 +180,6 @@ local function OnHealthBarUpdate(statusBar, unit)
 		return
 	end
 
-	local isWatching = false
-
 	-- prepare our hooks/watcher
 	if statusBar.UpdateTextString then
 		-- this exists on TBC
@@ -179,8 +194,6 @@ local function OnHealthBarUpdate(statusBar, unit)
 			StatusBar = statusBar,
 			UnitGuid = UnitGUID(unit),
 		}
-
-		isWatching = true
 	end
 
 	-- only update target and focus
@@ -188,7 +201,7 @@ local function OnHealthBarUpdate(statusBar, unit)
 		return
 	end
 
-	if not SetRealHealth(statusBar, unit) and isWatching then
+	if not SetRealHealth(statusBar, unit) and IsClassic() then
 		-- clean up previous values
 		CleanTextShims(statusBar)
 	end
@@ -217,7 +230,7 @@ local function OnAddonLoaded()
 	config:Init()
 	tracker:Init()
 
-	if TargetFrame and TargetFrame.healthbar then
+	if IsClassic() and TargetFrame and TargetFrame.healthbar then
 		ClassicShims(TargetFrame.healthbar)
 	end
 end
@@ -236,9 +249,11 @@ else
 	mini:Notify("Update to run on this client.")
 end
 
-eventsFrame = CreateFrame("Frame")
-eventsFrame:RegisterEvent("UNIT_HEALTH")
-eventsFrame:SetScript("OnEvent", OnEvent)
+if IsClassic() then
+	eventsFrame = CreateFrame("Frame")
+	eventsFrame:RegisterEvent("UNIT_HEALTH")
+	eventsFrame:SetScript("OnEvent", OnEvent)
+end
 
 mini:WaitForAddonLoad(OnAddonLoaded)
 
