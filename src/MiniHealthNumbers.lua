@@ -216,6 +216,10 @@ end
 local function OnAddonLoaded()
 	config:Init()
 	tracker:Init()
+
+	if TargetFrame and TargetFrame.healthbar then
+		ClassicShims(TargetFrame.healthbar)
+	end
 end
 
 function addon:DebugPrint(msg, ...)
