@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.0
+
+Added passive mode for if other addons want to control the UI updates.
+
 ## 1.3.2
 
 Potential fixes around showing numbers on frames other than target and focus.
