@@ -158,6 +158,10 @@ local function OnUpdateTextString(statusBar)
 		return
 	end
 
+	if statusBar.IsForbidden and statusBar:IsForbidden() then
+		return
+	end
+
 	local unit = statusBar.unit
 
 	if unit ~= "target" and unit ~= "focus" then
@@ -188,12 +192,15 @@ local function OnHealthBarUpdate(statusBar, unit)
 
 			statusBar.MiniHealthNumbersHooked = true
 		end
-	else
+	elseif IsClassic() then
 		-- classic fallback
 		watching[unit] = {
 			StatusBar = statusBar,
 			UnitGuid = UnitGUID(unit),
 		}
+	else
+		addon:DebugPrint("Unsupported client.")
+		return
 	end
 
 	-- only update target and focus
