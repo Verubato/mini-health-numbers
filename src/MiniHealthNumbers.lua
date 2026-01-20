@@ -19,7 +19,7 @@ local function ClassicShims(statusBar)
 	-- classic era doesn't have any text strings on the target frame, so let's create them
 	-- blizzard is mucking around with our texts when we create them as TextString/LeftText/RightText
 	-- so don't use those fields when we shim
-	local font = "GameFontHighlightSmall"
+	local font = "TextStatusBarText"
 	local left = statusBar.LeftText or statusBar.MhnLeftText
 	local center = statusBar.TextString or statusBar.MhnTextString
 	local right = statusBar.RightText or statusBar.MhnRightText
