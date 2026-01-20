@@ -30,7 +30,7 @@ local function ClassicShims(statusBar)
 
 		fs:SetFontObject(font)
 		fs:SetJustifyH("LEFT")
-		fs:SetPoint("LEFT", statusBar, "LEFT", 6, 0)
+		fs:SetPoint("LEFT", statusBar, "LEFT", 0, 0)
 		fs:Hide()
 	end
 
