@@ -151,6 +151,11 @@ local function OnHealthBarUpdate(statusBar, unit)
 		return
 	end
 
+	if statusBar.unit and (statusBar.unit ~= unit) then
+		-- not sure why, but this is blizzard logic
+		return
+	end
+
 	local updated = SetRealHealth(statusBar, unit)
 
 	if statusBar.UpdateTextString then
