@@ -56,10 +56,10 @@ local function ClassicShims(statusBar)
 	end
 end
 
-local function CleanStatusBar(statusBar)
-	local left = statusBar.LeftText or statusBar.MhnLeftText
-	local center = statusBar.TextString or statusBar.MhnTextString
-	local right = statusBar.RightText or statusBar.MhnRightText
+local function CleanTextShims(statusBar)
+	local left = statusBar.MhnLeftText
+	local center = statusBar.MhnTextString
+	local right = statusBar.MhnRightText
 
 	local frames = {
 		left,
@@ -163,13 +163,9 @@ local function OnHealthBarUpdate(statusBar, unit)
 		return
 	end
 
-	local updated = false
+	local isWatching = false
 
-	-- only update target and focus, but hook it anyway in case that changes
-	if statusBar.unit == unit and (unit == "target" or unit == "focus") then
-		updated = SetRealHealth(statusBar, unit)
-	end
-
+	-- prepare our hooks/watcher
 	if statusBar.UpdateTextString then
 		-- this exists on TBC
 		if not statusBar.MiniHealthNumbersHooked then
@@ -184,10 +180,17 @@ local function OnHealthBarUpdate(statusBar, unit)
 			UnitGuid = UnitGUID(unit),
 		}
 
-		if not updated then
-			-- clean up previous values
-			CleanStatusBar(statusBar)
-		end
+		isWatching = true
+	end
+
+	-- only update target and focus
+	if statusBar.unit ~= unit or (unit ~= "target" and unit ~= "focus") then
+		return
+	end
+
+	if not SetRealHealth(statusBar, unit) and isWatching then
+		-- clean up previous values
+		CleanTextShims(statusBar)
 	end
 end
 
@@ -203,7 +206,7 @@ local function OnEvent()
 			OnHealthBarUpdate(entry.StatusBar, entry.StatusBar.unit)
 		else
 			-- they may have changed target, clean up previous values
-			CleanStatusBar(entry.StatusBar)
+			CleanTextShims(entry.StatusBar)
 			-- the bar no longer exists or the target has changed
 			watching[unit] = nil
 		end
