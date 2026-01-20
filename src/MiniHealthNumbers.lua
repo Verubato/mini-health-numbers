@@ -98,6 +98,10 @@ local function SetRealHealth(statusBar, unit)
 	end
 
 	if hp == 0 then
+		if IsClassic() then
+			CleanTextShims(statusBar)
+		end
+
 		-- blizzard sets a "dead" text
 		return false
 	end
@@ -127,6 +131,8 @@ local function SetRealHealth(statusBar, unit)
 			center:SetText(text)
 			center:Show()
 		end
+
+		return true
 	elseif displayMode == bothMode then
 		if left then
 			-- left one contains percentage
@@ -144,9 +150,11 @@ local function SetRealHealth(statusBar, unit)
 		if center then
 			center:Hide()
 		end
+
+		return true
 	end
 
-	return true
+	return false
 end
 
 local function OnUpdateTextString(statusBar)
