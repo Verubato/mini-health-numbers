@@ -300,8 +300,10 @@ function M:GetHealthByGuid(guid)
 		return nil, nil
 	end
 
-	-- capture the current hp values
-	ObserveHealth(state)
+	if not state.Pending then
+		-- only update health if there's no pending window going on
+		ObserveHealth(state)
+	end
 
 	if (Now() - (state.LastSeen or 0)) > staleSeconds then
 		data[guid] = nil

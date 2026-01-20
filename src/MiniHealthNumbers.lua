@@ -120,7 +120,7 @@ local function SetRealHealth(statusBar, unit)
 
 		if right then
 			-- right one contains the real values
-			right:SetText(tostring(hpAbbreviated))
+			right:SetText(hpAbbreviated)
 			right:Show()
 		end
 
@@ -163,9 +163,11 @@ local function OnHealthBarUpdate(statusBar, unit)
 		return
 	end
 
+	local updated = false
+
 	-- only update target and focus, but hook it anyway in case that changes
 	if statusBar.unit == unit and (unit == "target" or unit == "focus") then
-		SetRealHealth(statusBar, unit)
+		updated = SetRealHealth(statusBar, unit)
 	end
 
 	if statusBar.UpdateTextString then
