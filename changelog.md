@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.4.2
+
+- Nicer font for classic.
+- Moved percentage text to the left a bit more.
+- Fixed accidental hiding of player frame health text.
+
 ## 1.4.1
 
 Classic era fixes.
