@@ -130,8 +130,14 @@ local function SetRealHealth(statusBar, unit)
 	return true
 end
 
-local function OnUpdateTextString(statusBar, unit)
-	if not statusBar or not unit then
+local function OnUpdateTextString(statusBar)
+	if not statusBar or not statusBar.unit then
+		return
+	end
+
+	local unit = statusBar.unit
+
+	if unit ~= "target" and unit ~= "focus" then
 		return
 	end
 
@@ -147,23 +153,15 @@ local function OnHealthBarUpdate(statusBar, unit)
 		return
 	end
 
-	if unit ~= "target" and unit ~= "focus" then
-		return
+	-- only update target and focus, but hook it anyway in case that changes
+	if statusBar.unit == unit and (unit == "target" or unit == "focus") then
+		SetRealHealth(statusBar, unit)
 	end
-
-	if statusBar.unit and (statusBar.unit ~= unit) then
-		-- not sure why, but this is blizzard logic
-		return
-	end
-
-	local updated = SetRealHealth(statusBar, unit)
 
 	if statusBar.UpdateTextString then
 		-- this exists on TBC
 		if not statusBar.MiniHealthNumbersHooked then
-			hooksecurefunc(statusBar, "UpdateTextString", function()
-				OnUpdateTextString(statusBar, unit)
-			end)
+			hooksecurefunc(statusBar, "UpdateTextString", OnUpdateTextString)
 
 			statusBar.MiniHealthNumbersHooked = true
 		end
@@ -186,7 +184,7 @@ local function OnEvent()
 		local isSameUnit = entry.UnitGuid == UnitGUID(unit)
 
 		if isSameUnit and entry.StatusBar:IsVisible() then
-			OnHealthBarUpdate(entry.StatusBar, unit)
+			OnHealthBarUpdate(entry.StatusBar, entry.StatusBar.unit)
 		else
 			-- they may have changed target, clean up previous values
 			CleanStatusBar(entry.StatusBar)
