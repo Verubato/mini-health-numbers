@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.3.2
+
+Potential fixes around showing numbers on frames other than target and focus.
+
 ## 1.3.1
 
 - Potential fix for target of target frame showing numbers when it shouldn't.
