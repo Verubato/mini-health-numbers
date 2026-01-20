@@ -33,7 +33,7 @@ end
 ---This is so it just sits quietly in the background and you can use the API for your own addon to handle the display.
 ---@param addonName string the name of the addon who is putting us into passive mode
 function v1:PassiveMode(addonName)
-	if not addonName then
+	if type(addonName) ~= "string" then
 		return false
 	end
 
