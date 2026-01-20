@@ -104,7 +104,7 @@ local function SetRealHealth(statusBar, unit)
 		-- it doesn't make much sense with percent mode and this addon
 		-- so just use real values to avoid bug reports
 		if center then
-			local text = string.format("%s/%s", hpAbbreviated, maxAbbreviated)
+			local text = string.format("%s / %s", hpAbbreviated, maxAbbreviated)
 			center:SetText(text)
 			center:Show()
 		end
