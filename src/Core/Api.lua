@@ -28,3 +28,21 @@ function v1:GetHealthByGuid(guid)
 
 	return tracker:GetHealthByGuid(guid)
 end
+
+---Puts the addon in passive mode where it doesn't update any text strings.
+---This is so it just sits quietly in the background and you can use the API for your own addon to handle the display.
+---@param addonName string the name of the addon who is putting us into passive mode
+function v1:PassiveMode(addonName)
+	if not addonName then
+		return false
+	end
+
+	addon.PassiveModeOwner = addonName
+	addon.PassiveMode = true
+	return true
+end
+
+---Puts the addon into active mode where it updates text strings.
+function v1:ActiveMode()
+	addon.PassiveMode = false
+end

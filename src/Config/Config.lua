@@ -35,6 +35,24 @@ function M:Init()
 
 	lines:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -verticalSpacing)
 
+	local passiveModeText = "'%s' is controlling UI updates and we are running in passive mode."
+	local mode = mini:TextLine({
+		Parent = panel,
+		Text = passiveModeText,
+		Font = "GameFontRed"
+	})
+
+	mode:SetPoint("TOPLEFT", lines, "BOTTOMLEFT", 0, -verticalSpacing)
+
+	panel:HookScript("OnShow", function()
+		if addon.PassiveMode then
+			mode:SetText(string.format(passiveModeText, addon.PassiveModeOwner or "nil"))
+			mode:Show()
+		else
+			mode:Hide()
+		end
+	end)
+
 	mini:RegisterSlashCommand(category, panel, {
 		"/minihealthnumbers",
 		"/minihn",

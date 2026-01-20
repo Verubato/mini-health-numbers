@@ -1,6 +1,8 @@
 ---@type string, Addon
 local _, addon = ...
 addon.DebugMode = false
+addon.PassiveMode = false
+
 local mini = addon.Framework
 local config = addon.Config
 local tracker = addon.Tracker
@@ -131,6 +133,10 @@ local function SetRealHealth(statusBar, unit)
 end
 
 local function OnUpdateTextString(statusBar)
+	if addon.PassiveMode then
+		return
+	end
+
 	if not statusBar or not statusBar.unit then
 		return
 	end
@@ -145,6 +151,10 @@ local function OnUpdateTextString(statusBar)
 end
 
 local function OnHealthBarUpdate(statusBar, unit)
+	if addon.PassiveMode then
+		return
+	end
+
 	if not statusBar or not unit then
 		return
 	end
@@ -180,6 +190,10 @@ local function OnHealthBarUpdate(statusBar, unit)
 end
 
 local function OnEvent()
+	if addon.PassiveMode then
+		return
+	end
+
 	for unit, entry in pairs(watching) do
 		local isSameUnit = entry.UnitGuid == UnitGUID(unit)
 
@@ -220,13 +234,15 @@ eventsFrame:SetScript("OnEvent", OnEvent)
 mini:WaitForAddonLoad(OnAddonLoaded)
 
 ---@class Addon
+---@field PassiveMode boolean
+---@field PassiveModeOwner string
+---@field DebugMode boolean
 ---@field Framework MiniFramework
 ---@field Tracker HealthTracker
 ---@field UnitUtil UnitUtil
 ---@field Numerics Numerics
 ---@field CombatLogParser CombatLogParser
 ---@field Config Config
----@field DebugMode boolean
 ---@field DebugPrint fun(self: table, msg: string, ...)
 
 ---@class WatchEntry
