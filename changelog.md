@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.3.1
+
+- Potential fix for target of target frame showing numbers when it shouldn't.
+- Added spacing around the numeric values.
+
 ## 1.3.0
 
 Abbreviated large numbers.
