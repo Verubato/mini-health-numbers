@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.4.1
+
+Classic era fixes.
+
 ## 1.4.0
 
 Added passive mode for if other addons want to control the UI updates.
