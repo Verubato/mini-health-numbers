@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.5.0
+
+Added exclude max hp option.
+
 ## 1.4.2
 
 - Nicer font for classic.
