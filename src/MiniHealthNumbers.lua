@@ -14,6 +14,8 @@ local numericMode = STATUS_TEXT_DISPLAY_MODE and STATUS_TEXT_DISPLAY_MODE.NUMERI
 local bothMode = STATUS_TEXT_DISPLAY_MODE and STATUS_TEXT_DISPLAY_MODE.BOTH or "BOTH"
 ---@type { string: WatchEntry }
 local watching = {}
+---@type Db
+local db
 
 local function IsClassic()
 	return LE_EXPANSION_LEVEL_CURRENT ~= nil
@@ -127,7 +129,14 @@ local function SetRealHealth(statusBar, unit)
 		-- it doesn't make much sense with percent mode and this addon
 		-- so just use real values to avoid bug reports
 		if center then
-			local text = string.format("%s / %s", hpAbbreviated, maxAbbreviated)
+			local text
+
+			if db.ExcludeMax then
+				text = tostring(hpAbbreviated)
+			else
+				text = string.format("%s / %s", hpAbbreviated, maxAbbreviated)
+			end
+
 			center:SetText(text)
 			center:Show()
 		end
@@ -244,6 +253,8 @@ end
 local function OnAddonLoaded()
 	config:Init()
 	tracker:Init()
+
+	db = mini:GetSavedVars()
 
 	if IsClassic() and TargetFrame and TargetFrame.healthbar then
 		ClassicShims(TargetFrame.healthbar)

@@ -5,6 +5,14 @@ local mini = addon.Framework
 ---@class Config
 local M = {}
 
+---@class Db
+local dbDefaults = {
+	ExcludeMax = false,
+}
+
+---@type Db
+local db
+
 addon.Config = M
 
 function M:Init()
@@ -17,6 +25,8 @@ function M:Init()
 	if not category then
 		return
 	end
+
+	db = mini:GetSavedVars(dbDefaults)
 
 	local version = C_AddOns.GetAddOnMetadata(addonName, "Version")
 	local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
@@ -35,6 +45,20 @@ function M:Init()
 
 	lines:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -verticalSpacing)
 
+	local excludeMax = mini:Checkbox({
+		Parent = panel,
+		LabelText = "Exclude max",
+		Tooltip = "Only show the current hp (exclude max hp).",
+		GetValue = function ()
+			return  db.ExcludeMax
+		end,
+		SetValue = function (value)
+			db.ExcludeMax = value
+		end
+	})
+
+	excludeMax:SetPoint("TOPLEFT", lines, "BOTTOMLEFT", 0, -verticalSpacing)
+
 	local passiveModeText = "'%s' is controlling UI updates and we are running in passive mode."
 	local mode = mini:TextLine({
 		Parent = panel,
@@ -42,7 +66,7 @@ function M:Init()
 		Font = "GameFontRed"
 	})
 
-	mode:SetPoint("TOPLEFT", lines, "BOTTOMLEFT", 0, -verticalSpacing)
+	mode:SetPoint("TOPLEFT", excludeMax, "BOTTOMLEFT", 0, -verticalSpacing)
 
 	panel:HookScript("OnShow", function()
 		if addon.PassiveMode then
