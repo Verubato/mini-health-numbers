@@ -213,6 +213,8 @@ local function OnUnitHealth(_, unit)
 	-- backfill the starting value to ensure a valid starting point
 	if state.Pending and state.Pending.StartPercent == nil then
 		state.Pending.StartPercent = state.LastPercent
+		-- events before this baseline don't belong to this window
+		state.Pending.NetAmount = 0
 	end
 
 	if state.Pending then
@@ -315,6 +317,9 @@ function M:GetHealthByGuid(guid)
 	end
 
 	local percent = unitUtil:UnitHealthPercent(state.Unit)
+	if not percent then
+		return nil, nil
+	end
 	local max = math.floor(state.Max)
 	local current = math.floor(max * percent)
 
