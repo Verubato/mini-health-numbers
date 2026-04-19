@@ -36,7 +36,7 @@ local function ClassicShims(statusBar)
 	local overlay = statusBar.MhnOverlay
 
 	if not overlay then
-		overlay = CreateFrame("Frame", statusBar)
+		overlay = CreateFrame("Frame", nil, statusBar)
 		overlay:SetFrameLevel(statusBar:GetParent():GetFrameLevel() + 1)
 		statusBar.MhnOverlay = overlay
 	end
