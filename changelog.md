@@ -1,5 +1,10 @@
 # Changelog
 
+## 1.6.0
+
+- Parent frame bug fix from Body so text hides when deselecting a target.
+- Potential fix for random large health spikes.
+
 ## 1.5.0
 
 Added exclude max hp option.
