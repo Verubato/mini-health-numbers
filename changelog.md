@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.1
+
+12.1 version support
+
 ## 1.6.0
 
 - Parent frame bug fix from Body so text hides when deselecting a target.
