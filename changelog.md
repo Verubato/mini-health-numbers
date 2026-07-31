@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.6.2
+
+Removed retail 12.1 from supported versions (TBC/Classic only addon).
+
 ## 1.6.1
 
 12.1 version support
