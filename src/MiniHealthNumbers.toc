@@ -10,7 +10,7 @@
 Utils\Numerics.lua
 Utils\UnitUtil.lua
 Utils\CombatLogParser.lua
-Core\MiniFramework.lua
+Libs\MiniFramework\MiniFramework.xml
 Core\HealthTracker.lua
 Core\Api.lua
 Config\Config.lua

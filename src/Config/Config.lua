@@ -28,12 +28,7 @@ function M:Init()
 
 	db = mini:GetSavedVars(dbDefaults)
 
-	local version = C_AddOns.GetAddOnMetadata(addonName, "Version")
-	local title = panel:CreateFontString(nil, "ARTWORK", "GameFontNormalLarge")
-	title:SetPoint("TOPLEFT", 0, -verticalSpacing)
-	title:SetText(string.format("%s - %s", addonName, version))
-
-	local lines = mini:TextBlock({
+	local header = mini:PanelHeader({
 		Parent = panel,
 		Lines = {
 			"Note:",
@@ -41,9 +36,8 @@ function M:Init()
 			"  - Players in your group are determined with full accuracy.",
 			"  - Everyone else (enemy players and non-grouped players) are estimated based on combat log events.",
 		},
+		Gap = verticalSpacing,
 	})
-
-	lines:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -verticalSpacing)
 
 	local excludeMax = mini:Checkbox({
 		Parent = panel,
@@ -57,7 +51,7 @@ function M:Init()
 		end
 	})
 
-	excludeMax:SetPoint("TOPLEFT", lines, "BOTTOMLEFT", 0, -verticalSpacing)
+	excludeMax:SetPoint("TOPLEFT", header.Anchor, "BOTTOMLEFT", 0, -verticalSpacing)
 
 	local passiveModeText = "'%s' is controlling UI updates and we are running in passive mode."
 	local mode = mini:TextLine({
