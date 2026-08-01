@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.0
+
+New MiniFramework added across all my mini addons.
+
 ## 1.6.2
 
 Removed retail 12.1 from supported versions (TBC/Classic only addon).
