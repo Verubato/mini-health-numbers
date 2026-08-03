@@ -36,3 +36,10 @@ jobs:
       - name: Lint
         shell: pwsh
         run: ./build/Lint.ps1
+
+      # always() so a lint failure doesn't hide the test result, and vice versa. Addons with no
+      # suite report "no suite found" and pass.
+      - name: Test
+        if: always()
+        shell: pwsh
+        run: ./build/Test.ps1
