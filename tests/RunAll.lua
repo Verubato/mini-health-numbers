@@ -5,12 +5,15 @@
 -- Requirements: Lua 5.1. The shared harness lives in the build submodule, so a fresh clone
 -- needs `git submodule update --init` first.
 
-package.path = "build/Lua/?.lua;tests/?.lua;" .. package.path
+package.path = "build/Lua/?.lua;tests/Helpers/?.lua;tests/?.lua;" .. package.path
 
 io.write("MiniHealthNumbers - unit tests\n")
 io.write("======================================\n")
 
 local testFiles = {
+	"tests/TestCombatLogParser.lua",
+	"tests/TestHealthTracker.lua",
+	-- Last: the smoke test installs a clean client over whatever the suites above left.
 	"tests/TestSmoke.lua",
 }
 
