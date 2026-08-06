@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.2
+
+Fixed the passive mode warning showing in the config panel when passive mode was off.
+
 ## 1.7.1
 
 Updated interface versions for the latest Classic, TBC and Mists builds.

@@ -56,20 +56,24 @@ function M:Init()
 	local passiveModeText = "'%s' is controlling UI updates and we are running in passive mode."
 	local mode = mini:TextLine({
 		Parent = panel,
-		Text = passiveModeText,
+		Text = "",
 		Font = "GameFontRed"
 	})
 
 	mode:SetPoint("TOPLEFT", excludeMax, "BOTTOMLEFT", 0, -verticalSpacing)
 
-	panel:HookScript("OnShow", function()
+	local function UpdatePassiveModeText()
 		if addon.PassiveMode then
 			mode:SetText(string.format(passiveModeText, addon.PassiveModeOwner or "nil"))
 			mode:Show()
 		else
 			mode:Hide()
 		end
-	end)
+	end
+
+	-- the panel starts shown, so OnShow won't fire on its first display
+	UpdatePassiveModeText()
+	panel:HookScript("OnShow", UpdatePassiveModeText)
 
 	mini:RegisterSlashCommand(category, panel, {
 		"/minihealthnumbers",
