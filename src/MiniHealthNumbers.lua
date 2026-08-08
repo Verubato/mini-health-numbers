@@ -266,13 +266,13 @@ function addon:DebugPrint(msg, ...)
 		return
 	end
 
-	mini:Notify(msg, ...)
+	mini:NotifyWithPrefix(msg, ...)
 end
 
 if UnitFrameHealthBar_Update then
 	hooksecurefunc("UnitFrameHealthBar_Update", OnHealthBarUpdate)
 else
-	mini:Notify("Update to run on this client.")
+	mini:NotifyWithPrefix("Update to run on this client.")
 end
 
 if IsClassic() then
