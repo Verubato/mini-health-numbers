@@ -10,7 +10,7 @@ This is a very new addon and needs testing, so any feedback is more than welcome
 
 ## Screenshots
 
-![MiniHealthNumbers screenshot](https://media.forgecdn.net/attachments/1474/689/screenshot-png.png)
+![MiniHealthNumbers screenshot](https://raw.githubusercontent.com/Verubato/mini-health-numbers/main/assets/Screenshot.png)
 
 ## Download
 
