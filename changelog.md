@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.3
+
+Updated the addon icon to the new shared Mini style.
+
 ## 1.7.2
 
 Fixed the passive mode warning showing in the config panel when passive mode was off.
