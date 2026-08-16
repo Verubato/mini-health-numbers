@@ -1,6 +1,7 @@
 ## Interface: 20506, 11509
 ## Title: MiniHealthNumbers
 ## Notes: Shows the real health value of mobs and players instead of percentages.
+## Category: Mini
 ## Author: Verz
 ## Version: 1.7.3
 ## SavedVariables: MiniHealthNumbersDB
