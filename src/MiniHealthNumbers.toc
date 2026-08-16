@@ -3,7 +3,7 @@
 ## Notes: Shows the real health value of mobs and players instead of percentages.
 ## Category: Mini
 ## Author: Verz
-## Version: 1.7.3
+## Version: 1.7.4
 ## SavedVariables: MiniHealthNumbersDB
 ## IconTexture: Interface\AddOns\MiniHealthNumbers\Icon.blp
 ## X-Curse-Project-ID: 1434957

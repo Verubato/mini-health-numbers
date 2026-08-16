@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.4
+
+Added a Mini category so the addon groups with the other Mini addons in the addon list.
+
 ## 1.7.3
 
 Updated the addon icon to the new shared Mini style.
