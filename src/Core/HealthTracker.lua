@@ -4,12 +4,17 @@ local mini = addon.Framework
 local numerics = addon.Numerics
 local unitUtil = addon.UnitUtil
 local combatLog = addon.CombatLogParser
-local db
 local eventsFrame
 local initialised = false
 
 ---@type { [string]: StateEntry }
 local data = {}
+-- The player's own guid, which never moves within a session and is compared against on every
+-- combat log event.
+local playerGuid
+-- How often stale entries are swept out. Only bounded by this: the table gains an entry per
+-- player seen, and a long session in a busy zone sees a lot of them.
+local cleanupIntervalSeconds = 60
 
 -- 60 seconds x 60 minutes = 1 hour
 local staleSeconds = 60 * 60
@@ -222,8 +227,9 @@ local function OnUnitHealth(_, unit)
 	end
 end
 
-local function OnCombatLog()
-	local _, subevent, _, _, _, _, _, dstGUID = CombatLogGetCurrentEventInfo()
+---@param ... any the CLEU payload
+local function OnCombatLog(...)
+	local _, subevent, _, _, _, _, _, dstGUID = ...
 
 	if not dstGUID then
 		return
@@ -236,7 +242,11 @@ local function OnCombatLog()
 	end
 
 	-- ignore self events
-	if dstGUID == UnitGUID("player") then
+	if not playerGuid then
+		playerGuid = UnitGUID("player")
+	end
+
+	if dstGUID == playerGuid then
 		return
 	end
 
@@ -258,11 +268,11 @@ local function OnCombatLog()
 	local netAmount = nil
 
 	if subevent == "SWING_DAMAGE" then
-		netAmount = -combatLog:GetSwingDamageAmount()
+		netAmount = -combatLog:GetSwingDamageAmount(...)
 	elseif subevent == "SPELL_DAMAGE" or subevent == "RANGE_DAMAGE" or subevent == "SPELL_PERIODIC_DAMAGE" then
-		netAmount = -combatLog:GetSpellDamageAmount()
+		netAmount = -combatLog:GetSpellDamageAmount(...)
 	elseif subevent == "SPELL_HEAL" or subevent == "SPELL_PERIODIC_HEAL" then
-		netAmount = combatLog:GetSpellHealAmount()
+		netAmount = combatLog:GetSpellHealAmount(...)
 	elseif subevent == "UNIT_DIED" or subevent == "UNIT_DESTROYED" then
 		state.LastPercent = 0
 		state.LastPercentAt = Now()
@@ -365,9 +375,13 @@ function M:Init()
 		return
 	end
 
-	db = mini:GetSavedVars()
-	data = db.Cache or {}
-	db.Cache = data
+	local db = mini:GetSavedVars()
+
+	-- Held in memory only. The estimates come from a combat log that starts empty each session
+	-- and the unit tokens stored beside them are session scoped, so there is nothing here worth
+	-- carrying across a logout. Clearing the old key drops what earlier versions saved.
+	data = {}
+	db.Cache = nil
 
 	eventsFrame = CreateFrame("Frame")
 	eventsFrame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED")
@@ -375,13 +389,15 @@ function M:Init()
 
 	eventsFrame:SetScript("OnEvent", function(_, event, arg1)
 		if event == "COMBAT_LOG_EVENT_UNFILTERED" then
-			OnCombatLog()
+			-- Read once here and passed down, rather than each reader asking again.
+			OnCombatLog(CombatLogGetCurrentEventInfo())
 		elseif event == "UNIT_HEALTH" then
 			OnUnitHealth(event, arg1)
 		end
 	end)
 
 	Cleanup()
+	C_Timer.NewTicker(cleanupIntervalSeconds, Cleanup)
 
 	initialised = true
 end

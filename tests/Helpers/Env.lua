@@ -14,8 +14,8 @@ local M = {}
 ---Builds a fresh client with the addon loaded and logged in.
 ---@return table env
 function M.Build()
-	-- The tracker caches its per-unit state in saved variables, which survive a reload by
-	-- design. Each test wants an empty cache, so clear it before the addon loads.
+	-- Settings live in saved variables and survive a reload by design. Each test wants a
+	-- clean slate, so clear them before the addon loads.
 	_G.MiniHealthNumbersDB = nil
 
 	local context = harness.Load("MiniHealthNumbers")

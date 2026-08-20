@@ -22,7 +22,9 @@ function M:IsPet(unit)
 end
 
 function M:IsPlayerGUID(guid)
-	return type(guid) == "string" and guid:match("^Player%-")
+	-- A plain prefix compare rather than a pattern match; this is asked of every combat log
+	-- event the client hands out.
+	return type(guid) == "string" and strsub(guid, 1, 7) == "Player-"
 end
 
 ---@param unit string
