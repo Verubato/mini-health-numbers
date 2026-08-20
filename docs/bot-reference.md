@@ -14,7 +14,7 @@ are estimated from combat log events.
 |---|---|
 | Version | 1.7.3 |
 | Interface versions (.toc) | 20506 (TBC Classic 2.5.6), 11509 (Classic Era 1.15.x). Not for retail. |
-| Saved variables | MiniHealthNumbersDB, account wide (also stores the health estimate cache) |
+| Saved variables | MiniHealthNumbersDB, account wide (settings only) |
 | Slash commands | /minihealthnumbers, /minihn, /mhn (all open the settings panel) |
 | Settings location | Game Menu -> Options -> AddOns -> MiniHealthNumbers |
 | Frames affected | Target frame and focus frame only |
@@ -41,8 +41,9 @@ Estimation mechanics (for the estimated group):
 - New estimates are blended into the old one with adaptive smoothing: small corrections
   move slowly, large discrepancies move fast. This means an estimate can start wrong and
   converge as more combat is observed.
-- Estimates are cached in the saved variables and persist across sessions. An entry not
-  seen for 1 hour is discarded.
+- Estimates are held in memory for the session only, so they start empty on every login
+  and are not written to saved variables. An entry not seen for 1 hour is discarded, and
+  the sweep runs once a minute.
 - Death (UNIT_DIED) sets the unit's known health to 0.
 - No estimate can be shown until the addon has both a max-health estimate and a current
   health percentage for the unit, so a freshly seen enemy player may show nothing at
