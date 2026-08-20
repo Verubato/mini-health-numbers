@@ -12,7 +12,7 @@ are estimated from combat log events.
 
 | Item | Value |
 |---|---|
-| Version | 1.7.3 |
+| Version | 1.7.5 |
 | Interface versions (.toc) | 20506 (TBC Classic 2.5.6), 11509 (Classic Era 1.15.x). Not for retail. |
 | Saved variables | MiniHealthNumbersDB, account wide (settings only) |
 | Slash commands | /minihealthnumbers, /minihn, /mhn (all open the settings panel) |
