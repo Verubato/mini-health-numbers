@@ -33,12 +33,7 @@ function M:Init()
 
 	local header = mini:PanelHeader({
 		Parent = panel,
-		Lines = {
-			"Note:",
-			"  - Mob health is determined with full accuracy.",
-			"  - Players in your group are determined with full accuracy.",
-			"  - Everyone else (enemy players and non-grouped players) are estimated based on combat log events.",
-		},
+		Description = "Shows real NPC/player HP.",
 		Gap = verticalSpacing,
 	})
 
