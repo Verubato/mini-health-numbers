@@ -16,6 +16,9 @@ local db
 addon.Config = M
 
 function M:Init()
+	-- A styled button clashes with the stock Blizzard art around it in the settings screen.
+	mini:SetCustomStyling(true, { Button = false })
+
 	local verticalSpacing = mini.VerticalSpacing
 	local panel = CreateFrame("Frame")
 	panel.name = addonName
