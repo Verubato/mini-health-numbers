@@ -35,6 +35,7 @@ function M:Init()
 		Parent = panel,
 		Description = "Shows real NPC/player HP.",
 		Gap = verticalSpacing,
+		Divider = true,
 	})
 
 	local excludeMax = mini:Checkbox({

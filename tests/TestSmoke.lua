@@ -21,10 +21,25 @@ local function HasText(text)
 	return false
 end
 
+---The section rule is built by the framework and never handed back to the addon, so a test
+---finds it the way a player sees it, by its label.
+---@param text string
+---@return boolean
+local function HasDivider(text)
+	for _, frame in ipairs(WowMock.Frames) do
+		if frame.Label and frame.Label.GetText and frame.Label:GetText() == text then
+			return true
+		end
+	end
+
+	return false
+end
+
 smoke.Run("MiniHealthNumbers", {
 	extra = function(context)
 		fw.eq(context.Addon.Framework.CustomStyling, true, "custom styling on")
 		fw.eq(context.Addon.Framework.CustomStylingOverrides.Button, false, "stock buttons")
 		fw.truthy(HasText("Shows real NPC/player HP."), "the subtitle under the panel title")
+		fw.truthy(HasDivider("SETTINGS"), "the settings section rule under the header")
 	end,
 })
