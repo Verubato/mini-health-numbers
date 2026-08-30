@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.7.6
+
+UI improvements.
+
 ## 1.7.5
 
 Reduced CPU use per combat log event. Health estimates are now held in memory for the session rather than written to saved variables, so the saved variables file no longer grows over time.
